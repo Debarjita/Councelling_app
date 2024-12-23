@@ -1,4 +1,4 @@
-﻿# Mental Health Counseling App
+﻿# Mental Health Counseling App ( Using React Native)
 ## Introduction
 The Mental Health Counseling App is a React Native-based mobile application designed to provide users with a streamlined and user-friendly experience for 
 connecting with professional mental health counselors. This app focuses on verifying the identity of users through robust authentication methods and offering personalized recommendations for counselors based on the user's specific concerns.
