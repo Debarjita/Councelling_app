@@ -1,0 +1,61 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  lampy-backend:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - GIN_MODE=release
+    volumes:
+      - ./uploads:/app/uploads
+      - ./lampy.db:/app/lampy.db
+    restart: unless-stopped
+
+  # Optional: Add a reverse proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - lampy-backend
+    restart: unless-stopped
+
+---
+# nginx.conf (optional reverse proxy configuration)
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream backend {
+        server lampy-backend:8080;
+    }
+
+    server {
+        listen 80;
+        server_name localhost;
+
+        # Increase client max body size for file uploads
+        client_max_body_size 10M;
+
+        location / {
+            proxy_pass http://backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Serve uploaded files
+        location /uploads/ {
+            alias /app/uploads/;
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+    }
+}
